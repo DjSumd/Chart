@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2b2b2b">
+<title>Chart</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#2b2b2b;
+    --charcoal-soft:#3a3836;
+    --ink:#211f1d;
+    --paper:#f4efe7;
+    --paper-raised:#faf6ee;
+    --oxblood:#6e1f24;
+    --oxblood-bright:#8c2b31;
+    --brass:#b08536;
+    --brass-soft:#c9a861;
+    --line:#d8cfc0;
+    --line-soft:#e6ddce;
+    --muted:#8a8378;
+    --muted-deep:#6b655b;
+    --good:#4f6b3e;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-size:20px;
+    line-height:1.45;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(92px + env(safe-area-inset-bottom));
+  }
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---- Masthead ---- */
+  header{
+    padding:calc(24px + env(safe-area-inset-top)) 22px 16px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,var(--paper-raised),var(--paper));
+  }
+  header h1{
+    margin:0;
+    font-weight:600;
+    font-size:40px;
+    letter-spacing:0.5px;
+    color:var(--charcoal);
+  }
+  header .rule{
+    width:52px;height:2px;margin:9px auto 7px;
+    background:var(--brass);
+  }
+  header p{
+    margin:0;
+    font-style:italic;
+    font-size:17px;
+    color:var(--muted-deep);
+  }
+
+  /* ---- Period switch ---- */
+  .period{
+    display:flex;
+    gap:0;
+    margin:18px 22px 4px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    overflow:hidden;
+    background:var(--paper-raised);
+  }
+  .period button{
+    flex:1;
+    border:none;background:none;
+    padding:10px 4px;
+    font-size:18px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--muted-deep);
+    font-weight:500;
+  }
+  .period button.on{
+    background:var(--charcoal);
+    color:var(--paper);
+  }
+  .period-label{
+    text-align:center;
+    font-style:italic;
+    color:var(--muted);
+    font-size:16px;
+    margin:7px 22px 0;
+  }
+
+  /* ---- List ---- */
+  main{padding:14px 18px 10px;}
+  .empty{
+    text-align:center;
+    font-style:italic;
+    color:var(--muted);
+    padding:48px 30px;
+    font-size:19px;
+  }
+
+  .v{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:13px;
+    overflow:hidden;
+  }
+  .v-top{
+    display:flex;
+    align-items:stretch;
+  }
+  .v-body{
+    flex:1;
+    padding:13px 4px 13px 16px;
+    min-width:0;
+  }
+  .v-name{
+    font-size:25px;
+    font-weight:600;
+    color:var(--charcoal);
+    line-height:1.2;
+    word-wrap:break-word;
+  }
+  .v-note{
+    font-style:italic;
+    color:var(--muted-deep);
+    font-size:17px;
+    margin-top:2px;
+    word-wrap:break-word;
+  }
+  .v-count{
+    margin-top:9px;
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+  }
+  .v-count b{
+    font-size:30px;
+    font-weight:600;
+    color:var(--oxblood);
+    line-height:1;
+  }
+  .v-count span{
+    font-size:16px;
+    color:var(--muted);
+    letter-spacing:0.3px;
+  }
+  .pips{
+    margin-top:9px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+  }
+  .pip{
+    width:11px;height:11px;border-radius:50%;
+    background:var(--brass);
+    opacity:0.9;
+  }
+  .pip.ghost{
+    background:none;
+    border:1px solid var(--line);
+  }
+
+  .tick{
+    width:84px;
+    flex:0 0 84px;
+    border:none;
+    border-left:1px solid var(--line-soft);
+    background:var(--oxblood);
+    color:var(--paper);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    font-size:15px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    transition:background .12s;
+  }
+  .tick:active{background:var(--oxblood-bright);}
+  .tick .mark{font-size:30px;line-height:1;}
+
+  /* row of small actions */
+  .v-acts{
+    display:flex;
+    border-top:1px solid var(--line-soft);
+  }
+  .v-acts button{
+    flex:1;
+    border:none;background:none;
+    padding:9px 4px;
+    font-size:16px;
+    color:var(--muted-deep);
+    letter-spacing:0.4px;
+    font-style:italic;
+  }
+  .v-acts button + button{border-left:1px solid var(--line-soft);}
+  .v-acts button:active{background:var(--line-soft);}
+
+  /* ---- Log drawer ---- */
+  .log{
+    border-top:1px solid var(--line-soft);
+    padding:4px 16px 12px;
+    background:#fffdf8;
+  }
+  .log h4{
+    margin:12px 0 6px;
+    font-style:italic;
+    font-weight:500;
+    color:var(--muted-deep);
+    font-size:16px;
+    letter-spacing:0.5px;
+  }
+  .log-item{
+    padding:8px 0;
+    border-bottom:1px dotted var(--line);
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .log-item:last-child{border-bottom:none;}
+  .log-when{
+    flex:0 0 auto;
+    font-size:14px;
+    color:var(--brass);
+    font-weight:600;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    padding-top:3px;
+    width:74px;
+  }
+  .log-ctx{
+    flex:1;
+    font-size:18px;
+    color:var(--ink);
+  }
+  .log-ctx.none{color:var(--muted);font-style:italic;}
+  .log-del{
+    flex:0 0 auto;
+    border:none;background:none;
+    color:var(--muted);
+    font-size:20px;
+    padding:0 2px;
+    line-height:1;
+  }
+  .log-empty{
+    font-style:italic;color:var(--muted);font-size:17px;padding:6px 0 2px;
+  }
+
+  /* ---- Floating add ---- */
+  .fab{
+    position:fixed;
+    right:20px;
+    bottom:calc(20px + env(safe-area-inset-bottom));
+    width:62px;height:62px;
+    border-radius:50%;
+    border:none;
+    background:var(--charcoal);
+    color:var(--paper);
+    font-size:34px;
+    line-height:1;
+    box-shadow:0 5px 18px rgba(43,43,43,.34);
+    z-index:40;
+  }
+  .fab:active{background:var(--charcoal-soft);}
+
+  /* ---- Modal / sheet ---- */
+  .scrim{
+    position:fixed;inset:0;
+    background:rgba(33,31,29,.5);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:60;
+  }
+  .scrim.open{display:flex;}
+  .sheet{
+    width:100%;
+    max-width:560px;
+    background:var(--paper);
+    border-radius:14px 14px 0 0;
+    padding:22px 22px calc(26px + env(safe-area-inset-bottom));
+    max-height:90vh;
+    overflow-y:auto;
+    animation:rise .22s ease;
+  }
+  @keyframes rise{from{transform:translateY(40px);opacity:.4;}to{transform:none;opacity:1;}}
+  .sheet h2{
+    margin:0 0 4px;
+    font-size:30px;font-weight:600;color:var(--charcoal);
+  }
+  .sheet .sub{
+    margin:0 0 18px;font-style:italic;color:var(--muted-deep);font-size:17px;
+  }
+  label{
+    display:block;
+    font-size:15px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--muted-deep);
+    margin:14px 0 5px;
+  }
+  input[type=text],textarea{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--paper-raised);
+    border-radius:3px;
+    padding:11px 12px;
+    font-family:inherit;
+    font-size:21px;
+    color:var(--ink);
+    resize:vertical;
+  }
+  input[type=text]:focus,textarea:focus{outline:none;border-color:var(--brass);}
+  .seg{
+    display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:2px;
+  }
+  .seg button{
+    flex:1;border:none;background:var(--paper-raised);
+    padding:11px 4px;font-size:18px;color:var(--muted-deep);
+    letter-spacing:1px;text-transform:uppercase;
+  }
+  .seg button.on{background:var(--charcoal);color:var(--paper);}
+  .sheet-acts{
+    display:flex;gap:11px;margin-top:24px;
+  }
+  .sheet-acts button{
+    flex:1;
+    padding:13px 4px;
+    border-radius:3px;
+    font-size:19px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    border:1px solid var(--charcoal);
+  }
+  .btn-ghost{background:none;color:var(--charcoal);}
+  .btn-solid{background:var(--charcoal);color:var(--paper);}
+  .btn-danger{border-color:var(--oxblood);color:var(--oxblood);background:none;}
+
+  .quick{
+    font-style:italic;color:var(--muted);font-size:16px;margin-top:16px;line-height:1.5;
+  }
+
+  footer{
+    text-align:center;
+    font-style:italic;
+    color:var(--muted);
+    font-size:15px;
+    padding:4px 20px 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chart</h1>
+  <div class="rule"></div>
+  <p>the virtues you are keeping</p>
+</header>
+
+<div class="period">
+  <button id="pw" class="on">Week</button>
+  <button id="pm">Month</button>
+</div>
+<div class="period-label" id="periodLabel"></div>
+
+<main id="list"></main>
+
+<footer id="foot"></footer>
+
+<button class="fab" id="fab">+</button>
+
+<!-- Add / edit sheet -->
+<div class="scrim" id="editScrim">
+  <div class="sheet">
+    <h2 id="editTitle">A virtue to keep</h2>
+    <p class="sub">Name it, and tick it each time you live up to it.</p>
+    <label>Virtue or goal</label>
+    <input type="text" id="fName" placeholder="Silence. Order. Starting rehearsals on time." autocomplete="off">
+    <label>A line on what it means to you</label>
+    <input type="text" id="fNote" placeholder="optional" autocomplete="off">
+    <label>Keep it by the</label>
+    <div class="seg">
+      <button id="segW" class="on">Week</button>
+      <button id="segM">Month</button>
+    </div>
+    <div class="sheet-acts">
+      <button class="btn-ghost" id="editCancel">Cancel</button>
+      <button class="btn-solid" id="editSave">Save</button>
+    </div>
+    <div class="sheet-acts" id="deleteRow" style="display:none;margin-top:11px;">
+      <button class="btn-danger" id="editDelete">Remove this virtue</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tick context sheet -->
+<div class="scrim" id="tickScrim">
+  <div class="sheet">
+    <h2 id="tickTitle">Lived up to it</h2>
+    <p class="sub" id="tickSub"></p>
+    <label>What was the occasion?</label>
+    <textarea id="tickCtx" rows="3" placeholder="The moment, the context, what it cost. Or leave it blank."></textarea>
+    <div class="sheet-acts">
+      <button class="btn-ghost" id="tickSkip">Just tick it</button>
+      <button class="btn-solid" id="tickSave">Mark it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE='chart.virtues.v1';
+let state=load();
+let period='week';
+let editId=null;
+let tickId=null;
+
+function load(){
+  try{const r=localStorage.getItem(STORE);if(r)return JSON.parse(r);}catch(e){}
+  return {virtues:[]};
+}
+function save(){
+  try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+/* ---- period boundaries ---- */
+function periodStart(d){
+  const x=new Date(d);
+  x.setHours(0,0,0,0);
+  if(period==='week'){
+    // week starts Monday
+    const day=(x.getDay()+6)%7;
+    x.setDate(x.getDate()-day);
+  }else{
+    x.setDate(1);
+  }
+  return x.getTime();
+}
+function inPeriod(ts){
+  const start=periodStart(Date.now());
+  return ts>=start;
+}
+function periodLabelText(){
+  const s=new Date(periodStart(Date.now()));
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if(period==='week'){
+    const e=new Date(s);e.setDate(e.getDate()+6);
+    const sm=months[s.getMonth()].slice(0,3), em=months[e.getMonth()].slice(0,3);
+    return 'Week of '+s.getDate()+' '+sm+(sm!==em?' – '+e.getDate()+' '+em:' – '+e.getDate());
+  }
+  return months[s.getMonth()]+' '+s.getFullYear();
+}
+
+/* ---- rendering ---- */
+function render(){
+  document.getElementById('pw').classList.toggle('on',period==='week');
+  document.getElementById('pm').classList.toggle('on',period==='month');
+  document.getElementById('periodLabel').textContent=periodLabelText();
+
+  const list=document.getElementById('list');
+  const mine=state.virtues.filter(v=>v.period===period);
+  list.innerHTML='';
+
+  if(mine.length===0){
+    list.innerHTML='<div class="empty">No virtues set for the '+period+' yet.<br>Name one below, and begin keeping the chart.</div>';
+    document.getElementById('foot').textContent='';
+    return;
+  }
+
+  mine.forEach(v=>{
+    const ticksThis=v.ticks.filter(t=>inPeriod(t.at));
+    const el=document.createElement('div');
+    el.className='v';
+
+    // pips: one per tick this period, up to 30, then ghost up to a baseline of 7/week
+    const baseline=period==='week'?7:0;
+    let pipHtml='';
+    const filled=Math.min(ticksThis.length,40);
+    for(let i=0;i<filled;i++)pipHtml+='<div class="pip"></div>';
+    for(let i=ticksThis.length;i<baseline;i++)pipHtml+='<div class="pip ghost"></div>';
+
+    el.innerHTML=
+      '<div class="v-top">'+
+        '<div class="v-body">'+
+          '<div class="v-name"></div>'+
+          (v.note?'<div class="v-note"></div>':'')+
+          '<div class="v-count"><b>'+ticksThis.length+'</b><span>'+(ticksThis.length===1?'time':'times')+' this '+period+'</span></div>'+
+          '<div class="pips">'+pipHtml+'</div>'+
+        '</div>'+
+        '<button class="tick" data-tick="'+v.id+'"><span class="mark">✓</span>tick</button>'+
+      '</div>'+
+      '<div class="v-acts">'+
+        '<button data-log="'+v.id+'">The record ('+ticksThis.length+')</button>'+
+        '<button data-edit="'+v.id+'">Edit</button>'+
+      '</div>'+
+      '<div class="log" data-drawer="'+v.id+'" style="display:none;"></div>';
+
+    el.querySelector('.v-name').textContent=v.name;
+    if(v.note)el.querySelector('.v-note').textContent=v.note;
+    list.appendChild(el);
+  });
+
+  // footer tally
+  const totalThis=mine.reduce((a,v)=>a+v.ticks.filter(t=>inPeriod(t.at)).length,0);
+  document.getElementById('foot').textContent=
+    totalThis+' mark'+(totalThis===1?'':'s')+' kept this '+period+', across '+mine.length+' virtue'+(mine.length===1?'':'s')+'.';
+}
+
+/* ---- log drawer ---- */
+function renderDrawer(id){
+  const v=state.virtues.find(x=>x.id===id);
+  const drawer=document.querySelector('[data-drawer="'+id+'"]');
+  if(!v||!drawer)return;
+  const ticks=[...v.ticks].sort((a,b)=>b.at-a.at);
+  if(ticks.length===0){
+    drawer.innerHTML='<div class="log-empty">No marks yet. The first one is the hardest.</div>';
+    return;
+  }
+  // group: this period vs earlier
+  let html='';
+  const start=periodStart(Date.now());
+  const now=ticks.filter(t=>t.at>=start);
+  const past=ticks.filter(t=>t.at<start);
+  if(now.length){
+    html+='<h4>This '+period+'</h4>';
+    now.forEach(t=>html+=logItem(id,t));
+  }
+  if(past.length){
+    html+='<h4>Earlier</h4>';
+    past.forEach(t=>html+=logItem(id,t));
+  }
+  drawer.innerHTML=html;
+}
+function logItem(vid,t){
+  const d=new Date(t.at);
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const when=days[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1);
+  const ctx=t.ctx&&t.ctx.trim()
+    ? '<div class="log-ctx"></div>'
+    : '<div class="log-ctx none">(no context noted)</div>';
+  return '<div class="log-item" data-tid="'+t.id+'" data-vid="'+vid+'">'+
+    '<div class="log-when">'+when+'</div>'+
+    ctx+
+    '<button class="log-del" data-delctx="'+t.id+'" data-delv="'+vid+'">×</button>'+
+  '</div>';
+}
+
+/* ---- events ---- */
+document.getElementById('pw').onclick=()=>{period='week';render();};
+document.getElementById('pm').onclick=()=>{period='month';render();};
+
+document.getElementById('list').addEventListener('click',e=>{
+  const tick=e.target.closest('[data-tick]');
+  const log=e.target.closest('[data-log]');
+  const edit=e.target.closest('[data-edit]');
+  const delctx=e.target.closest('[data-delctx]');
+
+  if(delctx){
+    const tid=delctx.getAttribute('data-delctx');
+    const vid=delctx.getAttribute('data-delv');
+    const v=state.virtues.find(x=>x.id===vid);
+    if(v){v.ticks=v.ticks.filter(t=>t.id!==tid);save();render();
+      const dr=document.querySelector('[data-drawer="'+vid+'"]');
+      if(dr){dr.style.display='block';renderDrawer(vid);}
+    }
+    return;
+  }
+  if(tick){openTick(tick.getAttribute('data-tick'));return;}
+  if(edit){openEdit(edit.getAttribute('data-edit'));return;}
+  if(log){
+    const id=log.getAttribute('data-log');
+    const dr=document.querySelector('[data-drawer="'+id+'"]');
+    if(dr){
+      const open=dr.style.display==='block';
+      dr.style.display=open?'none':'block';
+      if(!open)renderDrawer(id);
+    }
+  }
+});
+
+/* set log context text safely */
+function setLogText(){
+  document.querySelectorAll('.log-item').forEach(item=>{
+    const tid=item.getAttribute('data-tid');
+    const vid=item.getAttribute('data-vid');
+    const v=state.virtues.find(x=>x.id===vid);
+    if(!v)return;
+    const t=v.ticks.find(x=>x.id===tid);
+    const slot=item.querySelector('.log-ctx:not(.none)');
+    if(t&&slot)slot.textContent=t.ctx;
+  });
+}
+const _origRenderDrawer=renderDrawer;
+renderDrawer=function(id){_origRenderDrawer(id);setLogText();};
+
+/* ---- add/edit sheet ---- */
+let formPeriod='week';
+document.getElementById('fab').onclick=()=>openEdit(null);
+document.getElementById('segW').onclick=()=>{formPeriod='week';segUpdate();};
+document.getElementById('segM').onclick=()=>{formPeriod='month';segUpdate();};
+function segUpdate(){
+  document.getElementById('segW').classList.toggle('on',formPeriod==='week');
+  document.getElementById('segM').classList.toggle('on',formPeriod==='month');
+}
+function openEdit(id){
+  editId=id;
+  const t=document.getElementById('editTitle');
+  const delRow=document.getElementById('deleteRow');
+  if(id){
+    const v=state.virtues.find(x=>x.id===id);
+    t.textContent='Edit the virtue';
+    document.getElementById('fName').value=v.name;
+    document.getElementById('fNote').value=v.note||'';
+    formPeriod=v.period;
+    delRow.style.display='flex';
+  }else{
+    t.textContent='A virtue to keep';
+    document.getElementById('fName').value='';
+    document.getElementById('fNote').value='';
+    formPeriod=period;
+    delRow.style.display='none';
+  }
+  segUpdate();
+  document.getElementById('editScrim').classList.add('open');
+  setTimeout(()=>document.getElementById('fName').focus(),120);
+}
+function closeEdit(){document.getElementById('editScrim').classList.remove('open');editId=null;}
+document.getElementById('editCancel').onclick=closeEdit;
+document.getElementById('editScrim').onclick=e=>{if(e.target.id==='editScrim')closeEdit();};
+document.getElementById('editSave').onclick=()=>{
+  const name=document.getElementById('fName').value.trim();
+  if(!name){document.getElementById('fName').focus();return;}
+  const note=document.getElementById('fNote').value.trim();
+  if(editId){
+    const v=state.virtues.find(x=>x.id===editId);
+    v.name=name;v.note=note;v.period=formPeriod;
+  }else{
+    state.virtues.push({id:uid(),name,note,period:formPeriod,created:Date.now(),ticks:[]});
+  }
+  save();period=formPeriod;render();closeEdit();
+};
+document.getElementById('editDelete').onclick=()=>{
+  if(!editId)return;
+  state.virtues=state.virtues.filter(x=>x.id!==editId);
+  save();render();closeEdit();
+};
+
+/* ---- tick sheet ---- */
+function openTick(id){
+  tickId=id;
+  const v=state.virtues.find(x=>x.id===id);
+  document.getElementById('tickTitle').textContent=v.name;
+  document.getElementById('tickSub').textContent='Mark the moment you kept it.';
+  document.getElementById('tickCtx').value='';
+  document.getElementById('tickScrim').classList.add('open');
+  setTimeout(()=>document.getElementById('tickCtx').focus(),120);
+}
+function closeTick(){document.getElementById('tickScrim').classList.remove('open');tickId=null;}
+function commitTick(ctx){
+  const v=state.virtues.find(x=>x.id===tickId);
+  if(v){v.ticks.push({id:uid(),at:Date.now(),ctx:ctx||''});save();render();}
+  closeTick();
+}
+document.getElementById('tickSave').onclick=()=>commitTick(document.getElementById('tickCtx').value.trim());
+document.getElementById('tickSkip').onclick=()=>commitTick('');
+document.getElementById('tickScrim').onclick=e=>{if(e.target.id==='tickScrim')closeTick();};
+
+render();
+
+/* ---- service worker ---- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
